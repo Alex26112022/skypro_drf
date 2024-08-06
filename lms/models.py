@@ -31,3 +31,10 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL,
                                verbose_name='Курс', related_name='lesson',
                                **options)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Урок'
+        verbose_name_plural = 'Уроки'
