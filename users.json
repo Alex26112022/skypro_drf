@@ -1,0 +1,66 @@
+[
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "password": "",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-08-08T12:26:31.835Z",
+      "email": "example1234@mail.ru",
+      "phone": "+79876543210",
+      "country": "Russia",
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 6,
+    "fields": {
+      "password": "",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-08-08T12:27:24.561Z",
+      "email": "example5678@mail.ru",
+      "phone": "+79000000000",
+      "country": "Russia",
+      "avatar": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+   {
+    "model": "users.payments",
+    "pk": 1,
+    "fields": {
+      "user": 5,
+      "date_of_payment": "2024-06-08",
+      "paid_course": "2",
+      "paid_lesson": null,
+      "payment_amount": 50000,
+      "payment_method": "CASH"
+    }
+  },
+  {
+    "model": "users.payments",
+    "pk": 2,
+    "fields": {
+      "user": 6,
+      "date_of_payment": "2024-07-10",
+      "paid_course": null,
+      "paid_lesson": 1,
+      "payment_amount": 15000,
+      "payment_method": "TRANSFER TO ACCOUNT"
+    }
+  }
+]

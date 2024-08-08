@@ -1,6 +1,6 @@
 from django.db import models
 
-from users.models import options
+options = {'blank': True, 'null': True}
 
 
 class Course(models.Model):

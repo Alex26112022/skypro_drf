@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
+from lms.models import Course, Lesson
+
 options = {'blank': True, 'null': True}
 
 
@@ -26,3 +28,24 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Payments(models.Model):
+    payment_methods = (
+        ('CASH', 'Наличные'),
+        ('TRANSFER TO ACCOUNT', 'Перевод на счет')
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             verbose_name='Пользователь',
+                             related_name='payments')
+    date_of_payment = models.DateField(verbose_name='Дата оплаты', **options)
+    paid_course = models.ForeignKey(Course, on_delete=models.SET_NULL,
+                                    verbose_name='Оплаченный курс',
+                                    related_name='payments', **options)
+    paid_lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL,
+                                    verbose_name='Оплаченный урок',
+                                    related_name='payments', **options)
+    payment_amount = models.FloatField(verbose_name='Сумма оплаты', **options)
+    payment_method = models.CharField(max_length=255, choices=payment_methods,
+                                      verbose_name='Метод оплаты', **options)
