@@ -21,7 +21,7 @@ class UserCreateAPIView(CreateAPIView):
     user = get_user_model()
     queryset = user.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
         user = serializer.save(is_active=True)
@@ -42,7 +42,8 @@ class UserUpdateAPIView(UpdateAPIView):
 
     def perform_update(self, serializer):
         user = serializer.save(is_active=True)
-        user.set_password(user.password)
+        if self.request.data.get('password') is not None:
+            user.set_password(user.password)
         user.save()
 
 
