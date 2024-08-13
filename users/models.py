@@ -49,3 +49,10 @@ class Payments(models.Model):
     payment_amount = models.FloatField(verbose_name='Сумма оплаты', **options)
     payment_method = models.CharField(max_length=255, choices=payment_methods,
                                       verbose_name='Метод оплаты', **options)
+
+    def __str__(self):
+        return f'{self.user} - {self.payment_amount} руб.'
+
+    class Meta:
+        verbose_name = 'Оплата'
+        verbose_name_plural = 'Оплаты'
