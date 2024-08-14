@@ -11,8 +11,16 @@ class PaymentsSerializer(ModelSerializer):
 
 
 class UserSerializer(ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'email', 'first_name', 'phone', 'country', 'avatar')
+
+
+class UserDetailSerializer(ModelSerializer):
     payments = PaymentsSerializer(many=True, read_only=True)
 
     class Meta:
         model = get_user_model()
-        fields = ('id', 'email', 'phone', 'country', 'avatar', 'payments')
+        fields = (
+            'id', 'payments', 'email', 'password', 'first_name', 'last_name',
+            'phone', 'country', 'avatar', 'is_active', 'date_joined', 'groups')
