@@ -1,5 +1,7 @@
 from django.db import models
 
+from config.settings import AUTH_USER_MODEL
+
 options = {'blank': True, 'null': True}
 
 
@@ -10,6 +12,9 @@ class Course(models.Model):
                                 help_text='Загрузите картинку', **options)
     description = models.TextField(verbose_name='Описание',
                                    help_text='Сделайте описание', **options)
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                              related_name='course',
+                              verbose_name='Пользователь', **options)
 
     def __str__(self):
         return self.title
@@ -31,6 +36,9 @@ class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.SET_NULL,
                                verbose_name='Курс', related_name='lesson',
                                **options)
+    owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                              related_name='lesson',
+                              verbose_name='Пользователь', **options)
 
     def __str__(self):
         return self.title
