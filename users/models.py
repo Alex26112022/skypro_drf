@@ -49,3 +49,20 @@ class Payments(models.Model):
     payment_amount = models.FloatField(verbose_name='Сумма оплаты', **options)
     payment_method = models.CharField(max_length=255, choices=payment_methods,
                                       verbose_name='Метод оплаты', **options)
+
+    def __str__(self):
+        return f'{self.user} - {self.payment_amount} руб.'
+
+    def save(
+            self, force_insert=False, force_update=False, using=None,
+            update_fields=None
+    ):
+        if self.paid_course and self.paid_lesson:
+            raise ValueError(
+                'Не могут быть указаны сразу курс и урок при оплате - выберите что-то одно!')
+        super().save(force_insert=False, force_update=False, using=None,
+                     update_fields=None)
+
+    class Meta:
+        verbose_name = 'Оплата'
+        verbose_name_plural = 'Оплаты'
