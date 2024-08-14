@@ -8,7 +8,9 @@ from rest_framework.generics import ListAPIView, CreateAPIView, \
 from rest_framework.permissions import AllowAny
 
 from users.models import User, Payments
-from users.serializers import UserSerializer, PaymentsSerializer
+from users.permissions import IsUser
+from users.serializers import UserSerializer, PaymentsSerializer, \
+    UserDetailSerializer
 
 
 class UserListAPIView(ListAPIView):
@@ -20,7 +22,7 @@ class UserListAPIView(ListAPIView):
 class UserCreateAPIView(CreateAPIView):
     user = get_user_model()
     queryset = user.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
     permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
@@ -32,13 +34,24 @@ class UserCreateAPIView(CreateAPIView):
 class UserRetrieveAPIView(RetrieveAPIView):
     user = get_user_model()
     queryset = user.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
+
+    def get_serializer_class(self):
+        obj_user = User.objects.get(pk=self.kwargs['pk'])
+        user = self.request.user
+        print(obj_user)
+        print(user)
+        if user.is_superuser or user == obj_user:
+            return UserDetailSerializer
+        else:
+            return UserSerializer
 
 
 class UserUpdateAPIView(UpdateAPIView):
     user = get_user_model()
     queryset = user.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsUser]
 
     def perform_update(self, serializer):
         user = serializer.save(is_active=True)
@@ -50,7 +63,8 @@ class UserUpdateAPIView(UpdateAPIView):
 class UserDestroyAPIView(DestroyAPIView):
     user = get_user_model()
     queryset = user.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsUser]
 
 
 class PaymentsListAPIView(ListAPIView):
