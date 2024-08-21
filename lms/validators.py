@@ -7,6 +7,7 @@ class InYoutube:
         self.field = field
 
     def __call__(self, value):
-        if 'youtube.com' not in value.get('video'):
-            message = f'Недопустимое значение в поле {self.field}!'
-            raise serializers.ValidationError(message)
+        if value.get('video'):
+            if 'youtube.com' not in value.get('video'):
+                message = f'Недопустимое значение в поле {self.field}!'
+                raise serializers.ValidationError(message)
