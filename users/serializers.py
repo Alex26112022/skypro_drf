@@ -31,3 +31,9 @@ class StripePaymentSerializer(ModelSerializer):
     class Meta:
         model = StripePayment
         fields = '__all__'
+
+
+class StatusPaymentSerializer(ModelSerializer):
+    class Meta:
+        model = StripePayment
+        fields = ('session_id', 'status_payment',)

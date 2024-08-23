@@ -6,13 +6,16 @@ from rest_framework import filters
 from rest_framework.generics import ListAPIView, CreateAPIView, \
     RetrieveAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from lms.models import Course
 from users.models import User, Payments, StripePayment
 from users.permissions import IsUser
 from users.serializers import UserSerializer, PaymentsSerializer, \
-    UserDetailSerializer, StripePaymentSerializer
-from users.services import create_stripe_price, create_stripe_session
+    UserDetailSerializer, StripePaymentSerializer, StatusPaymentSerializer
+from users.services import create_stripe_price, create_stripe_session, \
+    get_status_payment
 
 
 class UserListAPIView(ListAPIView):
@@ -89,3 +92,15 @@ class StripePaymentCreateAPIView(CreateAPIView):
         payment.session_id = session_id
         payment.link_payment = link_payment
         payment.save()
+
+
+class StripePaymentRetrieveAPIView(APIView):
+    queryset = StripePayment.objects.all()
+    serializer_class = StatusPaymentSerializer
+
+    def post(self, request, *args, **kwargs):
+        payment = StripePayment.objects.get(session_id=self.request.data.get('session_id'))
+        payment.status_payment = get_status_payment(payment.session_id)
+        status = f'{payment.status_payment}'
+        payment.save()
+        return Response({"status": status})

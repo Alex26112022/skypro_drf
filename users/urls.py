@@ -7,7 +7,7 @@ from users.apps import UsersConfig
 
 from users.views import UserListAPIView, UserCreateAPIView, UserDestroyAPIView, \
     UserUpdateAPIView, UserRetrieveAPIView, PaymentsListAPIView, \
-    StripePaymentCreateAPIView
+    StripePaymentCreateAPIView, StripePaymentRetrieveAPIView
 
 app_name = UsersConfig.name
 
@@ -26,5 +26,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(permission_classes=(AllowAny,)),
          name='refresh'),
     path('stripe-payment/', StripePaymentCreateAPIView.as_view(),
-         name='stripe_payment_create')
+         name='stripe_payment_create'),
+    path('stripe-payment/check-status/',
+         StripePaymentRetrieveAPIView.as_view(), name='stripe_payment_status')
 ]

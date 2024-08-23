@@ -69,7 +69,8 @@ class Payments(models.Model):
 
 
 class StripePayment(models.Model):
-    course_id = models.PositiveIntegerField(verbose_name='Id курса')
+
+    course_id = models.PositiveIntegerField(verbose_name='Id курса', **options)
     user = models.ForeignKey(User, on_delete=models.SET_NULL,
                              verbose_name='Пользователь',
                              related_name='stripe_payments', **options)
@@ -77,6 +78,8 @@ class StripePayment(models.Model):
                                   **options)
     link_payment = models.URLField(max_length=400,
                                    verbose_name='Ссылка на оплату', **options)
+    status_payment = models.CharField(max_length=255,
+                                      verbose_name='Статус платежа', **options)
 
     def __str__(self):
         return f'{self.user} - {self.course_id}'
