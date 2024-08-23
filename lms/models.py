@@ -8,6 +8,7 @@ options = {'blank': True, 'null': True}
 class Course(models.Model):
     title = models.CharField(max_length=255, verbose_name='Название',
                              help_text='Укажите название', **options)
+    price = models.PositiveIntegerField(verbose_name='Стоимость', default=0)
     preview = models.ImageField(upload_to='lms/course/preview',
                                 help_text='Загрузите картинку', **options)
     description = models.TextField(verbose_name='Описание',
