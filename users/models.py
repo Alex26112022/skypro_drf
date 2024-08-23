@@ -66,3 +66,21 @@ class Payments(models.Model):
     class Meta:
         verbose_name = 'Оплата'
         verbose_name_plural = 'Оплаты'
+
+
+class StripePayment(models.Model):
+    course_id = models.PositiveIntegerField(verbose_name='Id курса')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL,
+                             verbose_name='Пользователь',
+                             related_name='stripe_payments', **options)
+    session_id = models.CharField(max_length=255, verbose_name='Id сессии',
+                                  **options)
+    link_payment = models.URLField(max_length=400,
+                                   verbose_name='Ссылка на оплату', **options)
+
+    def __str__(self):
+        return f'{self.user} - {self.course_id}'
+
+    class Meta:
+        verbose_name = 'Оплата через Stripe'
+        verbose_name_plural = 'Оплаты через Stripe'
