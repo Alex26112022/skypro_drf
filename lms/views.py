@@ -12,6 +12,7 @@ from lms.serializers import CourseSerializer, LessonSerializer
 
 
 class CourseViewSet(ModelViewSet):
+    """ Реализует CRUD для course. """
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     pagination_class = MyPaginator
@@ -40,6 +41,7 @@ class CourseViewSet(ModelViewSet):
 
 
 class LessonCreateApiView(CreateAPIView):
+    """ Создает новый урок. """
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, ~IsModerator]
@@ -50,6 +52,7 @@ class LessonCreateApiView(CreateAPIView):
 
 
 class LessonListApiView(ListAPIView):
+    """ Возвращает список всех уроков. """
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     pagination_class = MyPaginator
@@ -63,6 +66,7 @@ class LessonListApiView(ListAPIView):
 
 
 class LessonRetrieveApiView(RetrieveAPIView):
+    """ Возвращает информацию об уроке. """
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
 
@@ -75,19 +79,21 @@ class LessonRetrieveApiView(RetrieveAPIView):
 
 
 class LessonUpdateApiView(UpdateAPIView):
+    """ Редактирует урок. """
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsOwner | IsModerator]
 
 
 class LessonDestroyApiView(DestroyAPIView):
+    """ Удаляет урок. """
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsOwner]
 
 
 class SubscriptionAPIView(APIView):
-
+    """ Реализует подписку на курс. """
     def post(self, request, *args, **kwargs):
         user = self.request.user
         course_id = self.request.data.get('course_id')

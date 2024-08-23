@@ -6,7 +6,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, \
 from users.apps import UsersConfig
 
 from users.views import UserListAPIView, UserCreateAPIView, UserDestroyAPIView, \
-    UserUpdateAPIView, UserRetrieveAPIView, PaymentsListAPIView
+    UserUpdateAPIView, UserRetrieveAPIView, PaymentsListAPIView, \
+    StripePaymentCreateAPIView, StripePaymentRetrieveAPIView
 
 app_name = UsersConfig.name
 
@@ -24,4 +25,8 @@ urlpatterns = [
          name='login'),
     path('refresh/', TokenRefreshView.as_view(permission_classes=(AllowAny,)),
          name='refresh'),
+    path('stripe-payment/', StripePaymentCreateAPIView.as_view(),
+         name='stripe_payment_create'),
+    path('stripe-payment/check-status/',
+         StripePaymentRetrieveAPIView.as_view(), name='stripe_payment_status')
 ]

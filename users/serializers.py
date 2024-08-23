@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
+
 from rest_framework.serializers import ModelSerializer
 
-from users.models import Payments
+from users.models import Payments, StripePayment
 
 
 class PaymentsSerializer(ModelSerializer):
@@ -24,3 +25,21 @@ class UserDetailSerializer(ModelSerializer):
         fields = (
             'id', 'payments', 'email', 'password', 'first_name', 'last_name',
             'phone', 'country', 'avatar', 'is_active', 'date_joined', 'groups')
+
+
+class StripePaymentSerializer(ModelSerializer):
+    class Meta:
+        model = StripePayment
+        fields = '__all__'
+
+
+class StatusPaymentSerializer(ModelSerializer):
+    class Meta:
+        model = StripePayment
+        fields = ('session_id', 'status_payment',)
+
+
+class StatusPaymentSwaggerSerializer(ModelSerializer):
+    class Meta:
+        model = StripePayment
+        fields = ('session_id',)
