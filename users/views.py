@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters
 
 from rest_framework.generics import ListAPIView, CreateAPIView, \
@@ -13,7 +15,8 @@ from lms.models import Course
 from users.models import User, Payments, StripePayment
 from users.permissions import IsUser
 from users.serializers import UserSerializer, PaymentsSerializer, \
-    UserDetailSerializer, StripePaymentSerializer, StatusPaymentSerializer
+    UserDetailSerializer, StripePaymentSerializer, StatusPaymentSerializer, \
+    StatusPaymentSwaggerSerializer
 from users.services import create_stripe_price, create_stripe_session, \
     get_status_payment
 
@@ -42,7 +45,7 @@ class UserRetrieveAPIView(RetrieveAPIView):
     serializer_class = UserDetailSerializer
 
     def get_serializer_class(self):
-        obj_user = User.objects.get(pk=self.kwargs['pk'])
+        obj_user = User.objects.get(pk=self.kwargs.get('pk'))
         user = self.request.user
         print(obj_user)
         print(user)
@@ -94,12 +97,16 @@ class StripePaymentCreateAPIView(CreateAPIView):
         payment.save()
 
 
+@method_decorator(name='post', decorator=swagger_auto_schema(
+    request_body=StatusPaymentSwaggerSerializer,
+    responses={'201': 'Ok', 'Example Value': '{"status": "string"}'}, ))
 class StripePaymentRetrieveAPIView(APIView):
     queryset = StripePayment.objects.all()
     serializer_class = StatusPaymentSerializer
 
     def post(self, request, *args, **kwargs):
-        payment = StripePayment.objects.get(session_id=self.request.data.get('session_id'))
+        payment = StripePayment.objects.get(
+            session_id=self.request.data.get('session_id'))
         payment.status_payment = get_status_payment(payment.session_id)
         status = f'{payment.status_payment}'
         payment.save()

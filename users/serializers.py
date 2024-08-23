@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
+
 from rest_framework.serializers import ModelSerializer
 
-from lms.serializers import CourseSerializer
 from users.models import Payments, StripePayment
 
 
@@ -37,3 +37,9 @@ class StatusPaymentSerializer(ModelSerializer):
     class Meta:
         model = StripePayment
         fields = ('session_id', 'status_payment',)
+
+
+class StatusPaymentSwaggerSerializer(ModelSerializer):
+    class Meta:
+        model = StripePayment
+        fields = ('session_id',)
