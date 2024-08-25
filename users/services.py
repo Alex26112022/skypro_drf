@@ -4,12 +4,18 @@ from config.settings import STRIPE_SECRET_KEY
 stripe.api_key = STRIPE_SECRET_KEY
 
 
-def create_stripe_price(amount):
+def create_stripe_product(title, description):
+    """ Создает продукт в Stripe. """
+    product = stripe.Product.create(name=title, description=description)
+    return product.get('id')
+
+
+def create_stripe_price(amount, product_id):
     """ Создает цену в Stripe для оплаты курса. """
     return stripe.Price.create(
         currency="rub",
+        product=product_id,
         unit_amount=amount * 100,
-        product_data={"name": "Course Payment"},
     )
 
 
