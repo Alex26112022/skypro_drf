@@ -18,7 +18,7 @@ from users.serializers import UserSerializer, PaymentsSerializer, \
     UserDetailSerializer, StripePaymentSerializer, StatusPaymentSerializer, \
     StatusPaymentSwaggerSerializer
 from users.services import create_stripe_price, create_stripe_session, \
-    get_status_payment
+    get_status_payment, create_stripe_product
 
 
 class UserListAPIView(ListAPIView):
@@ -89,8 +89,9 @@ class StripePaymentCreateAPIView(CreateAPIView):
 
     def perform_create(self, serializer):
         payment = serializer.save(user=self.request.user)
-        amount = Course.objects.get(pk=payment.course_id).price
-        price = create_stripe_price(amount)
+        course = Course.objects.get(pk=payment.course_id)
+        product = create_stripe_product(course.title, course.description)
+        price = create_stripe_price(course.price, product)
         session_id, link_payment = create_stripe_session(price)
         payment.session_id = session_id
         payment.link_payment = link_payment
