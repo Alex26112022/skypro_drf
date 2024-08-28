@@ -1,16 +1,22 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
+from pytz import timezone
 from rest_framework import filters
 
 from rest_framework.generics import ListAPIView, CreateAPIView, \
-    RetrieveAPIView, UpdateAPIView, DestroyAPIView
+    RetrieveAPIView, UpdateAPIView, DestroyAPIView, get_object_or_404
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
+from config.settings import TIME_ZONE
 from lms.models import Course
 from users.models import User, Payments, StripePayment
 from users.permissions import IsUser
@@ -19,6 +25,8 @@ from users.serializers import UserSerializer, PaymentsSerializer, \
     StatusPaymentSwaggerSerializer
 from users.services import create_stripe_price, create_stripe_session, \
     get_status_payment, create_stripe_product
+
+tz = timezone(TIME_ZONE)
 
 
 class UserListAPIView(ListAPIView):
@@ -47,8 +55,6 @@ class UserRetrieveAPIView(RetrieveAPIView):
     def get_serializer_class(self):
         obj_user = User.objects.get(pk=self.kwargs.get('pk'))
         user = self.request.user
-        print(obj_user)
-        print(user)
         if user.is_superuser or user == obj_user:
             return UserDetailSerializer
         else:
@@ -112,3 +118,14 @@ class StripePaymentRetrieveAPIView(APIView):
         status = f'{payment.status_payment}'
         payment.save()
         return Response({"status": status})
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        now = datetime.now(tz)
+        user = get_object_or_404(User, email=request.data.get('email'))
+        user.last_login = now
+        user.save()
+        return super().post(request, *args, **kwargs)
