@@ -16,6 +16,9 @@ class Course(models.Model):
     owner = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.SET_NULL,
                               related_name='course',
                               verbose_name='Пользователь', **options)
+    updated_at = models.DateTimeField(auto_now=True,
+                                      verbose_name='Дата крайнего обновления',
+                                      **options)
 
     def __str__(self):
         return self.title

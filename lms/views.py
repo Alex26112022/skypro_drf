@@ -1,4 +1,6 @@
-from django.shortcuts import render
+from datetime import datetime, timedelta
+
+from pytz import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +12,10 @@ from lms.paginators import MyPaginator
 from lms.permissions import IsModerator, IsOwner
 from lms.serializers import CourseSerializer, LessonSerializer
 from lms.tasks import task_update_course
+
+tz = timezone('Europe/Moscow')
+# Минимальное время обновления курса для отправки уведомления.
+course_timedelta = timedelta(hours=4)
 
 
 class CourseViewSet(ModelViewSet):
@@ -41,7 +47,10 @@ class CourseViewSet(ModelViewSet):
         return super().get_permissions()
 
     def update(self, request, *args, **kwargs):
-        task_update_course.delay(kwargs.get('pk'))
+        course = Course.objects.get(pk=kwargs.get('pk'))
+        now = datetime.now(tz)
+        if course and now - course.updated_at > course_timedelta:
+            task_update_course.delay(kwargs.get('pk'))
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data,
@@ -98,6 +107,26 @@ class LessonUpdateApiView(UpdateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsOwner | IsModerator]
+
+    def update(self, request, *args, **kwargs):
+        lesson = Lesson.objects.get(pk=kwargs.get('pk'))
+        now = datetime.now(tz)
+        if lesson.course:
+            if now - lesson.course.updated_at > course_timedelta:
+                task_update_course.delay(lesson.course.pk)
+            lesson.course.updated_at = now
+            lesson.course.save()
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data,
+                                         partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
 
 class LessonDestroyApiView(DestroyAPIView):
