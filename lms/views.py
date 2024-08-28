@@ -9,6 +9,7 @@ from lms.models import Course, Lesson, SubscriptionToCourse
 from lms.paginators import MyPaginator
 from lms.permissions import IsModerator, IsOwner
 from lms.serializers import CourseSerializer, LessonSerializer
+from lms.tasks import task_update_course
 
 
 class CourseViewSet(ModelViewSet):
@@ -38,6 +39,20 @@ class CourseViewSet(ModelViewSet):
         elif self.action in ['list', 'retrieve']:
             self.permission_classes = [IsAuthenticated | IsModerator]
         return super().get_permissions()
+
+    def update(self, request, *args, **kwargs):
+        task_update_course.delay(kwargs.get('pk'))
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data,
+                                         partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
 
 class LessonCreateApiView(CreateAPIView):
@@ -94,6 +109,7 @@ class LessonDestroyApiView(DestroyAPIView):
 
 class SubscriptionAPIView(APIView):
     """ Реализует подписку на курс. """
+
     def post(self, request, *args, **kwargs):
         user = self.request.user
         course_id = self.request.data.get('course_id')

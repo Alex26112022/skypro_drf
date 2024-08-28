@@ -27,6 +27,7 @@ stripe = "^10.8.0"
 celery = "^5.4.0"
 redis = "^5.0.8"
 django-celery-beat = "^2.7.0"
+eventlet = "^0.36.1"
 
 
 [build-system]
