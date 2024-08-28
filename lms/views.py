@@ -7,13 +7,15 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import CreateAPIView, ListAPIView, \
     RetrieveAPIView, UpdateAPIView, DestroyAPIView, get_object_or_404
+
+from config.settings import TIME_ZONE
 from lms.models import Course, Lesson, SubscriptionToCourse
 from lms.paginators import MyPaginator
 from lms.permissions import IsModerator, IsOwner
 from lms.serializers import CourseSerializer, LessonSerializer
 from lms.tasks import task_update_course
 
-tz = timezone('Europe/Moscow')
+tz = timezone(TIME_ZONE)
 # Минимальное время обновления курса для отправки уведомления.
 course_timedelta = timedelta(hours=4)
 
@@ -51,17 +53,7 @@ class CourseViewSet(ModelViewSet):
         now = datetime.now(tz)
         if course and now - course.updated_at > course_timedelta:
             task_update_course.delay(kwargs.get('pk'))
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data,
-                                         partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
+        return super().update(request, *args, **kwargs)
 
 
 class LessonCreateApiView(CreateAPIView):
@@ -116,17 +108,7 @@ class LessonUpdateApiView(UpdateAPIView):
                 task_update_course.delay(lesson.course.pk)
             lesson.course.updated_at = now
             lesson.course.save()
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data,
-                                         partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
+        return super().update(request, *args, **kwargs)
 
 
 class LessonDestroyApiView(DestroyAPIView):
