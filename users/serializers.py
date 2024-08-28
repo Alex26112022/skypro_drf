@@ -24,7 +24,8 @@ class UserDetailSerializer(ModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'payments', 'email', 'password', 'first_name', 'last_name',
-            'phone', 'country', 'avatar', 'is_active', 'date_joined', 'groups')
+            'phone', 'country', 'avatar', 'is_active', 'date_joined',
+            'last_login', 'groups')
 
 
 class StripePaymentSerializer(ModelSerializer):

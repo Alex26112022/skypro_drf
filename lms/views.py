@@ -1,14 +1,23 @@
-from django.shortcuts import render
+from datetime import datetime, timedelta
+
+from pytz import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import CreateAPIView, ListAPIView, \
     RetrieveAPIView, UpdateAPIView, DestroyAPIView, get_object_or_404
+
+from config.settings import TIME_ZONE
 from lms.models import Course, Lesson, SubscriptionToCourse
 from lms.paginators import MyPaginator
 from lms.permissions import IsModerator, IsOwner
 from lms.serializers import CourseSerializer, LessonSerializer
+from lms.tasks import task_update_course
+
+tz = timezone(TIME_ZONE)
+# Минимальное время обновления курса для отправки уведомления.
+course_timedelta = timedelta(hours=4)
 
 
 class CourseViewSet(ModelViewSet):
@@ -38,6 +47,13 @@ class CourseViewSet(ModelViewSet):
         elif self.action in ['list', 'retrieve']:
             self.permission_classes = [IsAuthenticated | IsModerator]
         return super().get_permissions()
+
+    def update(self, request, *args, **kwargs):
+        course = Course.objects.get(pk=kwargs.get('pk'))
+        now = datetime.now(tz)
+        if course and now - course.updated_at > course_timedelta:
+            task_update_course.delay(kwargs.get('pk'))
+        return super().update(request, *args, **kwargs)
 
 
 class LessonCreateApiView(CreateAPIView):
@@ -84,6 +100,16 @@ class LessonUpdateApiView(UpdateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsOwner | IsModerator]
 
+    def update(self, request, *args, **kwargs):
+        lesson = Lesson.objects.get(pk=kwargs.get('pk'))
+        now = datetime.now(tz)
+        if lesson.course:
+            if now - lesson.course.updated_at > course_timedelta:
+                task_update_course.delay(lesson.course.pk)
+            lesson.course.updated_at = now
+            lesson.course.save()
+        return super().update(request, *args, **kwargs)
+
 
 class LessonDestroyApiView(DestroyAPIView):
     """ Удаляет урок. """
@@ -94,6 +120,7 @@ class LessonDestroyApiView(DestroyAPIView):
 
 class SubscriptionAPIView(APIView):
     """ Реализует подписку на курс. """
+
     def post(self, request, *args, **kwargs):
         user = self.request.user
         course_id = self.request.data.get('course_id')
